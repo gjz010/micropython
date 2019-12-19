@@ -23,6 +23,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
+CFLAGS_EXTRA += -DMODULE_SMARTPI_ENABLED=1
 CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
@@ -74,7 +75,15 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+
+LDFLAGS_SMARTPI = -static -L $(TOP)/../library -L $(TOP)/../target/aarch64-unknown-linux-musl/release/ \
+-Wl,-Bstatic -Wl,--start-group \
+-lade -lmyriadPlugin -linference_engine_s -lusb -ludev -lngraph -lpugixml -lstb_image \
+-lvpu_common_lib -lvpu_graph_transformer -lmvnc -lfluid -lXLink -lgflags_nothreads \
+-lstdc++ -lc -lgcc -ljpeg -lturbojpeg \
+-lepeg -lexif -ljpeg_sample -linfer_service -lsmartpi -Wl,--end-group
+
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_SMARTPI) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
